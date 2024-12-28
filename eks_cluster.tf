@@ -61,7 +61,7 @@ resource "aws_eks_access_entry" "default" {
 
 resource "aws_eks_access_policy_association" "default" {
   cluster_name  = aws_eks_cluster.default.name
-  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   principal_arn = aws_eks_access_entry.default.principal_arn
 
   access_scope {
