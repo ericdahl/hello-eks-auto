@@ -26,7 +26,7 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "${aws_vpc.default.cidr_block}-public"
-    #     "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
