@@ -25,8 +25,8 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                = "${aws_vpc.default.cidr_block}-public"
-#     "kubernetes.io/cluster/${local.name}" = "shared"
+    Name = "${aws_vpc.default.cidr_block}-public"
+    #     "kubernetes.io/cluster/${local.name}" = "shared"
   }
 }
 

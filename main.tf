@@ -14,3 +14,4 @@ data "aws_default_tags" "default" {}
 locals {
   name = data.aws_default_tags.default.tags["Name"]
 }
+

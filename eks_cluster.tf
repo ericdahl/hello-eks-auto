@@ -53,5 +53,18 @@ resource "aws_eks_cluster" "default" {
   ]
 }
 
+resource "aws_eks_access_entry" "default" {
+  cluster_name  = aws_eks_cluster.default.name
+  principal_arn = var.access_entry_principal_arn
+  type          = "STANDARD"
+}
 
+resource "aws_eks_access_policy_association" "default" {
+  cluster_name  = aws_eks_cluster.default.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+  principal_arn = aws_eks_access_entry.default.principal_arn
 
+  access_scope {
+    type = "cluster"
+  }
+}
