@@ -14,5 +14,6 @@ terraform apply
 aws eks update-kubeconfig --name hello-eks-auto
 
 cd k8s/
-kubectl apply -f ingressclass.yaml
+kubectl apply -f 00-ingressclass.yaml
+kubectl apply -f 01-game.yaml
 ```
