@@ -6,14 +6,16 @@ See https://aws.amazon.com/blogs/aws/streamline-kubernetes-cluster-management-wi
 
 ## Quick Start
 
+### Deploy AWS Infra
 ```
-git clone git@github.com:ericdahl/hello-eks-auto.git
-cd hello-eks-auto
-
+terraform init
 terraform apply
 aws eks update-kubeconfig --name hello-eks-auto
+```
 
-cd k8s/
-kubectl apply -f 00-ingressclass.yaml
-kubectl apply -f 01-game.yaml
+### Deploy k8s resources
+```
+cd tf-k8s/
+terraform init
+terraform apply
 ```
