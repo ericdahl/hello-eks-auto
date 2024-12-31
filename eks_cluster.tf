@@ -41,6 +41,14 @@ resource "aws_eks_cluster" "default" {
 
   }
 
+  enabled_cluster_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+    "controllerManager",
+    "scheduler"
+  ]
+
   # Ensure that IAM Role permissions are created before and deleted
   # after EKS Cluster handling. Otherwise, EKS will not be able to
   # properly delete EKS managed EC2 infrastructure such as Security Groups.
@@ -50,6 +58,7 @@ resource "aws_eks_cluster" "default" {
     aws_iam_role_policy_attachment.cluster_AmazonEKSBlockStoragePolicy,
     aws_iam_role_policy_attachment.cluster_AmazonEKSLoadBalancingPolicy,
     aws_iam_role_policy_attachment.cluster_AmazonEKSNetworkingPolicy,
+    aws_cloudwatch_log_group.cluster
   ]
 }
 
@@ -67,4 +76,8 @@ resource "aws_eks_access_policy_association" "default" {
   access_scope {
     type = "cluster"
   }
+}
+
+resource "aws_cloudwatch_log_group" "cluster" {
+  name = "/aws/eks/${local.name}/cluster"
 }
