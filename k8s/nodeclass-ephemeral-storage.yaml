@@ -1,0 +1,14 @@
+apiVersion: eks.amazonaws.com/v1
+kind: NodeClass
+metadata:
+  name: private-compute
+spec:
+  role: eks-auto-node-example
+  securityGroupSelectorTerms:
+    - tags:
+        Name: "eks-cluster-node-sg"
+  subnetSelectorTerms:
+    - tags:
+        Name: "eks-cluster-private-subnet"
+  ephemeralStorage:
+    size: "160Gi"
