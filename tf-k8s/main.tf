@@ -1,5 +1,4 @@
 provider "kubernetes" {
-  # Replace with your cluster access configuration
   config_path = "~/.kube/config"
 }
 
