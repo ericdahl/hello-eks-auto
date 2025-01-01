@@ -27,6 +27,8 @@ resource "aws_subnet" "public" {
   tags = {
     Name = "${aws_vpc.default.cidr_block}-public"
     "kubernetes.io/role/elb" = 1
+    # custom tag used by optional demo nodeclass
+    "kubernetes.io/role" = "node"
   }
 }
 
