@@ -23,13 +23,13 @@ terraform apply
 ### Prometheus
 
 TODO:
-- use gp3
+- rely on default storage class
 
 
 https://archive.eksworkshop.com/intermediate/240_monitoring/deploy-prometheus/
 
 ```
-kubectl apply -f k8s/storageclass-gp2.yaml
+kubectl apply -f k8s/storageclass-gp3.yaml
 
 kubectl create namespace prometheus
 
@@ -37,19 +37,29 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 helm install prometheus prometheus-community/prometheus \
     --namespace prometheus \
-    --set alertmanager.persistentVolume.storageClass="gp2" \
-    --set server.persistentVolume.storageClass="gp2"
+    --set alertmanager.persistentVolume.storageClass="auto-ebs-sc" \
+    --set server.persistentVolume.storageClass="auto-ebs-sc"
+    
+kubectl get all -n prometheus
+
+kubectl port-forward -n prometheus deploy/prometheus-server 8080:9090
 ```
 
 ```
 helm repo add grafana https://grafana.github.io/helm-charts
 
+kubectl create namespace grafana
+
 helm install grafana grafana/grafana \
     --namespace grafana \
-    --set persistence.storageClassName="gp2" \
+    --set persistence.storageClassName="auto-ebs-sc" \
     --set persistence.enabled=true \
     --set adminPassword='EKS!sAWSome' \
     --set service.type=LoadBalancer \
     --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"="internet-facing" \
     --values grafana.yaml
+    
+kubectl get all -n grafana
+
+kubectl port-forward -n grafana deploy/grafana 3000:3000
 ```
