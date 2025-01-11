@@ -22,10 +22,6 @@ terraform apply
 
 ### Prometheus
 
-TODO:
-- rely on default storage class
-
-
 https://archive.eksworkshop.com/intermediate/240_monitoring/deploy-prometheus/
 
 ```
@@ -35,10 +31,7 @@ kubectl create namespace prometheus
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
-helm install prometheus prometheus-community/prometheus \
-    --namespace prometheus \
-    --set alertmanager.persistentVolume.storageClass="auto-ebs-sc" \
-    --set server.persistentVolume.storageClass="auto-ebs-sc"
+helm install prometheus prometheus-community/prometheus --namespace prometheus 
     
 kubectl get all -n prometheus
 
@@ -52,7 +45,6 @@ kubectl create namespace grafana
 
 helm install grafana grafana/grafana \
     --namespace grafana \
-    --set persistence.storageClassName="auto-ebs-sc" \
     --set persistence.enabled=true \
     --set adminPassword='EKS!sAWSome' \
     --set service.type=LoadBalancer \
@@ -63,3 +55,6 @@ kubectl get all -n grafana
 
 kubectl port-forward -n grafana deploy/grafana 3000:3000
 ```
+
+Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
+
