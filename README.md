@@ -43,13 +43,7 @@ helm repo add grafana https://grafana.github.io/helm-charts
 
 kubectl create namespace grafana
 
-helm install grafana grafana/grafana \
-    --namespace grafana \
-    --set persistence.enabled=true \
-    --set adminPassword='EKS!sAWSome' \
-    --set service.type=LoadBalancer \
-    --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"="internet-facing" \
-    --values grafana.yaml
+helm install grafana grafana/grafana --namespace grafana --set persistence.enabled=true --values grafana-datasources.yaml
     
 kubectl get all -n grafana
 
@@ -58,3 +52,14 @@ kubectl port-forward -n grafana deploy/grafana 3000:3000
 
 Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
 
+### Alternative
+
+```
+helm install grafana grafana/grafana \
+    --namespace grafana \
+    --set persistence.enabled=true \
+    --set adminPassword='EKS!sAWSome' \
+    --set service.type=LoadBalancer \
+    --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"="internet-facing" \
+    --values grafana-datasources.yaml
+```
