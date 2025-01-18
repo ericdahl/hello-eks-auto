@@ -20,7 +20,19 @@ terraform init
 terraform apply
 ```
 
-### Prometheus
+### Demo Apps
+
+#### 2048 game
+
+```
+cd tf-k8s/game-2048
+terraform init
+terraform apply
+
+kubectl port-forward service/service-2048 8080:80
+```
+
+#### Prometheus + Grafana
 
 https://archive.eksworkshop.com/intermediate/240_monitoring/deploy-prometheus/
 
