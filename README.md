@@ -64,7 +64,7 @@ kubectl port-forward -n grafana deploy/grafana 3000:3000
 
 Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
 
-### Alternative
+##### Alternative
 
 ```
 helm install grafana grafana/grafana \
@@ -75,3 +75,20 @@ helm install grafana grafana/grafana \
     --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"="internet-facing" \
     --values grafana-datasources.yaml
 ```
+
+### Loki + Promtail
+
+```
+kubectl create namespace loki
+helm install loki grafana/loki-stack --namespace loki
+```
+
+TODO:
+- helm chart very outdated. why? broken API compatibility
+- swap to TF/yaml ?
+
+https://github.com/grafana/loki/issues/12931
+
+dashboard 14055
+
+dashboard 13639 Logs/App - basic
