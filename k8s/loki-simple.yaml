@@ -1,0 +1,244 @@
+###############################################################################
+# 1) Loki ConfigMap
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: loki
+data:
+  # source: https://raw.githubusercontent.com/grafana/loki/v3.3.2/cmd/loki/loki-local-config.yaml
+  loki.yaml: |
+    auth_enabled: false
+
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9096
+      log_level: debug
+      grpc_server_max_concurrent_streams: 1000
+    
+    common:
+      instance_addr: 127.0.0.1
+      path_prefix: /tmp/loki
+      storage:
+        filesystem:
+          chunks_directory: /tmp/loki/chunks
+          rules_directory: /tmp/loki/rules
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+    
+    query_range:
+      results_cache:
+        cache:
+          embedded_cache:
+            enabled: true
+            max_size_mb: 100
+    
+    limits_config:
+      metric_aggregation_enabled: true
+    
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    
+
+    
+    ruler:
+      alertmanager_url: http://localhost:9093
+    
+    frontend:
+      encoding: protobuf
+
+---
+###############################################################################
+# 2) Loki StatefulSet (single replica, ephemeral)
+###############################################################################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: loki
+spec:
+  serviceName: loki-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: loki
+          image: grafana/loki:3.3.2
+          args:
+            - -config.file=/etc/loki/config/loki.yaml
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki/config
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
+        - name: data
+          emptyDir: {}
+  volumeClaimTemplates: []
+
+---
+###############################################################################
+# 3) Loki Service
+###############################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: loki
+spec:
+  type: ClusterIP
+  selector:
+    app: loki
+  ports:
+    - port: 3100
+      targetPort: http-metrics
+      name: http
+
+---
+###############################################################################
+# 4) Promtail ConfigMap (basic setup scraping Kubernetes pods)
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: loki
+data:
+  promtail.yaml: |
+    server:
+      http_listen_port: 3101
+      log_level: info
+
+    # Sends logs to the Loki service.
+    clients:
+      - url: http://loki.loki.svc.cluster.local:3100/loki/api/v1/push
+
+    # Where Promtail tracks progress reading log files.
+    positions:
+      filename: /tmp/positions.yaml
+
+    scrape_configs:
+      # Scrape all container logs via Kubernetes
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+          # Drop "POD" containers and init containers
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            action: drop
+            regex: ^POD$
+          - source_labels: [__meta_kubernetes_pod_container_init]
+            action: drop
+            regex: '^true$'
+
+---
+###############################################################################
+# 5) Promtail DaemonSet to run on every node
+###############################################################################
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: loki
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      labels:
+        app: promtail
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: promtail
+          image: grafana/promtail:2.9.3
+          args:
+            - -config.file=/etc/promtail/promtail.yaml
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+            # Mount host logs so Promtail can read them
+            - name: varlog
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: promtail-config
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+---
+###############################################################################
+# Create a ClusterRole with the permissions needed for Promtail
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: promtail-clusterrole
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+
+---
+###############################################################################
+# Bind the above ClusterRole to your service account in the loki namespace
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: promtail-clusterrolebinding
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: loki
+roleRef:
+  kind: ClusterRole
+  name: promtail-clusterrole
+  apiGroup: rbac.authorization.k8s.io
