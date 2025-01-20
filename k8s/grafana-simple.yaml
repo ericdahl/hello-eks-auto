@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:latest
+          image: grafana/grafana:11.4.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
