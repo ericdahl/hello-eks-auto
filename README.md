@@ -108,9 +108,22 @@ Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
 
 
 
-### Loki + Promtail
+#### Loki + Promtail
 
-#### Option 1 - helm chart (very outdated)
+##### Option 0 - helm chart (current)
+
+```
+kubectl create namespace loki
+kubectl apply -f k8s/storageclass-gp3.yaml
+helm install loki grafana/loki -f values.yaml -n loki
+```
+
+TODO: not yet working
+    - 401 auth
+    - grafana unable to connect
+
+
+##### Option 1 - helm chart (very outdated)
 
 - standard helm install, but..
 - using extremely outdated loki 2.6.1 (why?)
