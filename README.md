@@ -108,7 +108,7 @@ Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
 
 
 
-#### Loki + Promtail
+#### Loki
 
 ##### Option 0 - helm chart (current)
 
@@ -120,6 +120,8 @@ helm install loki grafana/loki -f k8s/loki/values.yaml -n loki
 
 
 ##### Option 1 - helm chart (very outdated)
+
+(also includes promtail)
 
 - standard helm install, but..
 - using extremely outdated loki 2.6.1 (why?)
@@ -198,3 +200,11 @@ Content-Length: 115
 
 {"status":"success","data":["app","container","filename","instance","job","namespace","node_name","pod","stream"]}
 ```
+
+#### fluent-bit
+
+##### Option 1 - outdated but works
+
+helm install fluent-bit grafana/fluent-bit -n loki --set loki.serviceName=loki
+
+#### Option 2 - TODO: better option
