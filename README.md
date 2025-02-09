@@ -115,12 +115,8 @@ Import dashboard 3119 (Kubernetes Cluster Monitoring (via Prometheus))
 ```
 kubectl create namespace loki
 kubectl apply -f k8s/storageclass-gp3.yaml
-helm install loki grafana/loki -f values.yaml -n loki
+helm install loki grafana/loki -f k8s/loki/values.yaml -n loki
 ```
-
-TODO: not yet working
-    - 401 auth
-    - grafana unable to connect
 
 
 ##### Option 1 - helm chart (very outdated)
