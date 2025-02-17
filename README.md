@@ -153,8 +153,6 @@ depends on a Loki feature which doesn't exist in 2.6.1 - https://github.com/graf
 
 Looks like `loki-stack` is entirely obsolete and not maintained (2 years now)
 
-```
-
 Grafana 11.4
 loki 2.6.1
 
@@ -201,10 +199,38 @@ Content-Length: 115
 {"status":"success","data":["app","container","filename","instance","job","namespace","node_name","pod","stream"]}
 ```
 
-#### fluent-bit
 
-##### Option 1 - outdated but works
+#### Promtail
+
+##### Option 1 - helm chart
+- works well with loki
+
+```
+helm install promtail grafana/promtail -n loki
+```
+
+##### Option 2 - k8s yaml
+
+- TODO: not working - logs aren't getting into loki
+
+```
+kubectl apply -f k8s/promtail.yaml -n loki
+```
+
+
+#### fluent-bit / fluentd (WARNING: Not functional)
+
+##### Option 1 - outdated but works sort of
+
+- fluent-bit logs go to loki, but no app logs as it's configured for docker rather than k8s
 
 helm install fluent-bit grafana/fluent-bit -n loki --set loki.serviceName=loki
 
-#### Option 2 - TODO: better option
+##### Option 2 - TODO: better option
+
+- assumes ElasticSearch, not loki
+  - possibly override entire output plugin?
+
+helm repo add fluent https://fluent.github.io/helm-charts
+helm install fluentd fluent/fluentd -n loki --set loki.serviceName=loki
+
