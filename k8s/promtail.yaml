@@ -10,6 +10,8 @@ rules:
       - services
       - endpoints
       - pods
+      - namespaces
+      - pods/log
     verbs:
       - get
       - watch
@@ -92,43 +94,44 @@ stringData:
             target_label: component
           - action: replace
             source_labels:
-              - __meta_kubernetes_pod_node_name
+            - __meta_kubernetes_pod_node_name
             target_label: node_name
           - action: replace
             source_labels:
-              - __meta_kubernetes_namespace
+            - __meta_kubernetes_namespace
             target_label: namespace
           - action: replace
             replacement: $1
             separator: /
             source_labels:
-              - namespace
-              - app
+            - namespace
+            - app
             target_label: job
           - action: replace
             source_labels:
-              - __meta_kubernetes_pod_name
+            - __meta_kubernetes_pod_name
             target_label: pod
           - action: replace
             source_labels:
-              - __meta_kubernetes_pod_container_name
+            - __meta_kubernetes_pod_container_name
             target_label: container
           - action: replace
             replacement: /var/log/pods/*$1/*.log
             separator: /
             source_labels:
-              - __meta_kubernetes_pod_uid
-              - __meta_kubernetes_pod_container_name
+            - __meta_kubernetes_pod_uid
+            - __meta_kubernetes_pod_container_name
             target_label: __path__
           - action: replace
             regex: true/(.*)
             replacement: /var/log/pods/*$1/*.log
             separator: /
             source_labels:
-              - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
-              - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
-              - __meta_kubernetes_pod_container_name
+            - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
+            - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
+            - __meta_kubernetes_pod_container_name
             target_label: __path__
+
     
     
     
@@ -137,6 +140,8 @@ stringData:
     
     tracing:
       enabled: false
+---
+
 
 ---
 apiVersion: apps/v1
@@ -144,6 +149,12 @@ kind: DaemonSet
 metadata:
   name: promtail
   namespace: loki
+  labels:
+    helm.sh/chart: promtail-6.16.6
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/instance: promtail
+    app.kubernetes.io/version: "3.0.0"
+    app.kubernetes.io/managed-by: Helm
 spec:
   selector:
     matchLabels:
@@ -154,6 +165,8 @@ spec:
         app: promtail
     spec:
       serviceAccountName: promtail
+      automountServiceAccountToken: true
+      enableServiceLinks: true
       containers:
         - name: promtail
           image: "grafana/promtail:3.0.0"
@@ -165,11 +178,19 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/promtail
+            - mountPath: /var/lib/docker/containers
+              name: containers
+              readOnly: true
             - name: logs
               mountPath: /var/log/pods
               readOnly: true
             - name: positions
               mountPath: /run/promtail
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           securityContext:
             runAsUser: 0
             runAsGroup: 0
@@ -177,6 +198,9 @@ spec:
         - name: config
           secret:
             secretName: promtail-config
+        - hostPath:
+            path: /var/lib/docker/containers
+          name: containers
         - name: logs
           hostPath:
             path: /var/log/pods

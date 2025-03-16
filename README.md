@@ -202,20 +202,22 @@ Content-Length: 115
 
 #### Promtail
 
-##### Option 1 - helm chart
+##### Option 1 - k8s yaml
+
+- TODO: review and double check everything. cleanup/simplify
+
+```
+kubectl apply -f k8s/promtail.yaml -n loki
+```
+
+##### Option 2 - helm chart
 - works well with loki
 
 ```
 helm install promtail grafana/promtail -n loki
 ```
 
-##### Option 2 - k8s yaml
 
-- TODO: not working - logs aren't getting into loki
-
-```
-kubectl apply -f k8s/promtail.yaml -n loki
-```
 
 
 #### fluent-bit / fluentd (WARNING: Not functional)
