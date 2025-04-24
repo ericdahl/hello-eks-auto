@@ -1,0 +1,6 @@
+reviews:
+  path_instructions:
+    - path: "**/*.tf"
+      instructions: |
+        Review the Terraform code for all best practices. Ensure no security issues are introduced. Code should follow "terraform fmt" style conventions. Every taggable resource should have a ManagedBy tag for their team name. Every taggable resource should have a Provisioner=Terraform tag key/value.
+    
