@@ -2,6 +2,8 @@
 
 Demo of EKS Auto Mode, which streamlines Kubernetes cluster management on AWS. See [AWS Blog Post](https://aws.amazon.com/blogs/aws/streamline-kubernetes-cluster-management-with-new-amazon-eks-auto-mode/).
 
+also has ECS comparison
+
 ## Quick Start
 
 ### Deploy AWS Infrastructure
