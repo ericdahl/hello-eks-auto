@@ -27,6 +27,7 @@ resource "aws_subnet" "public" {
   tags = {
     Name = "${aws_vpc.default.cidr_block}-public"
     "kubernetes.io/role/elb" = 1
+    
     # custom tag used by optional demo nodeclass
     "kubernetes.io/role" = "node"
   }
@@ -46,8 +47,6 @@ resource "aws_route" "public" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.default.id
 }
-
-
 
 resource "aws_route_table_association" "public" {
   for_each = aws_subnet.public

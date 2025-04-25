@@ -1,5 +1,5 @@
 resource "aws_iam_role" "node" {
-  name = "eks-auto-node-example"
+  name = "local.name"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
