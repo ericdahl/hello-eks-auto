@@ -34,8 +34,8 @@ resource "kubernetes_deployment" "kuar" {
 
           resources {
             limits = {
-                cpu    = "0.1"
-                memory = "32Mi"
+              cpu    = "0.1"
+              memory = "32Mi"
             }
           }
 

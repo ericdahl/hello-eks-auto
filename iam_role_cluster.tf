@@ -1,7 +1,5 @@
-
-
 resource "aws_iam_role" "cluster" {
-  name = "eks-cluster-example"
+  name = "${local.name}-cluster"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
