@@ -32,12 +32,8 @@ resource "aws_eks_cluster" "default" {
     endpoint_private_access = true
     endpoint_public_access  = true
 
-    subnet_ids = [
-      # using public subnets to save money on NAT gateways and simplicity; not recommended for production
-      aws_subnet.public["us-east-1a"].id,
-      aws_subnet.public["us-east-1b"].id,
-      aws_subnet.public["us-east-1c"].id,
-    ]
+    # using public subnets to save money on NAT gateways and simplicity; not recommended for production
+    subnet_ids = [for az in var.availability_zones : aws_subnet.public[az].id]
 
   }
 
